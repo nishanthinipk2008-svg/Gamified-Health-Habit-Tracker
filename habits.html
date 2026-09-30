@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitQuest - Habits</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(124, 58, 237, 0.18), transparent 30%),
+                radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.15), transparent 30%),
+                #080617;
+            color: white;
+        }
+
+        nav {
+            width: 100%;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(10, 8, 30, 0.65);
+            backdrop-filter: blur(15px);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            transition: 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: white;
+            background: rgba(124, 58, 237, 0.20);
+            border-color: rgba(124, 58, 237, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.18);
+        }
+
+        .container {
+            width: 86%;
+            max-width: 1200px;
+            margin: 50px auto;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .title-section h1 {
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .title-section p {
+            color: #94a3b8;
+            font-size: 15px;
+        }
+
+        .add-btn {
+            border: none;
+            padding: 13px 22px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.25);
+            transition: 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.35);
+        }
+
+        .progress-box {
+            padding: 24px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.10);
+            backdrop-filter: blur(15px);
+            margin-bottom: 35px;
+        }
+
+        .progress-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .progress-top span {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.08);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #7c3aed, #06b6d4);
+            transition: 0.4s ease;
+        }
+
+        .habit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+        }
+
+        .habit-card {
+            padding: 25px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.055);
+            border: 1px solid rgba(255,255,255,0.10);
+            backdrop-filter: blur(15px);
+            transition: 0.3s ease;
+        }
+
+        .habit-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(124, 58, 237, 0.45);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .habit-icon {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            font-size: 25px;
+            background: rgba(124,58,237,0.15);
+            margin-bottom: 18px;
+        }
+
+        .habit-card h3 {
+            font-size: 20px;
+            margin-bottom: 7px;
+        }
+
+        .habit-card p {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .habit-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .xp {
+            color: #22d3ee;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .category {
+            color: #c4b5fd;
+            background: rgba(124,58,237,0.13);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+        }
+
+        .complete-btn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 14px;
+            border: 1px solid rgba(6,182,212,0.3);
+            background: rgba(6,182,212,0.10);
+            color: #67e8f9;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s ease;
+        }
+
+        .complete-btn:hover {
+            background: rgba(6,182,212,0.20);
+            transform: translateY(-2px);
+        }
+
+        .complete-btn.completed {
+            background: rgba(34,197,94,0.12);
+            border-color: rgba(34,197,94,0.35);
+            color: #86efac;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state h3 {
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        /* Modal */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            width: 90%;
+            max-width: 450px;
+            padding: 30px;
+            border-radius: 25px;
+            background: #121027;
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+        }
+
+        .modal-box h2 {
+            margin-bottom: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            outline: none;
+            background: rgba(255,255,255,0.06);
+            color: white;
+        }
+
+        .form-group select option {
+            background: #121027;
+            color: white;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cancel-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.10);
+            color: #cbd5e1;
+        }
+
+        .save-btn {
+            border: none;
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+        }
+
+        @media (max-width: 700px) {
+            nav {
+                flex-direction: column;
+                gap: 18px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .title-section h1 {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo">HabitQuest</div>
+
+        <div class="nav-links">
+            <a href="home.html">Home</a>
+            <a href="habits.html" class="active">Habits</a>
+            <a href="achievements.html">Achievements</a>
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+
+    <main class="container">
+
+        <!-- TOP -->
+        <div class="top-section">
+            <div class="title-section">
+                <h1>My Habits</h1>
+                <p>Build healthy habits and earn XP every day 🚀</p>
+            </div>
+
+            <button class="add-btn" onclick="openModal()">
+                + Add Habit
+            </button>
+        </div>
+
+
+        <!-- PROGRESS -->
+        <div class="progress-box">
+            <div class="progress-top">
+                <span>Today's Progress</span>
+                <span id="progressText">0 / 0 completed</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+
+        <!-- HABITS -->
+        <div class="habit-grid" id="habitGrid">
+
+            <div class="empty-state">
+                <h3>Loading habits...</h3>
+                <p>Please wait...</p>
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ADD HABIT MODAL -->
+    <div class="modal" id="habitModal">
+
+        <div class="modal-box">
+
+            <h2>Add New Habit</h2>
+
+            <div class="form-group">
+                <label>Habit Name</label>
+                <input
+                    type="text"
+                    id="habitName"
+                    placeholder="Example: Drink Water"
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+
+                <select id="habitCategory">
+                    <option value="Health">Health</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Study">Study</option>
+                    <option value="Mindfulness">Mindfulness</option>
+                    <option value="Lifestyle">Lifestyle</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>XP Reward</label>
+
+                <input
+                    type="number"
+                    id="habitXP"
+                    value="10"
+                    min="1"
+                >
+            </div>
+
+            <div class="modal-buttons">
+
+                <button
+                    class="cancel-btn"
+                    onclick="closeModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    class="save-btn"
+                    onclick="addHabit()"
+                >
+                    Add Habit
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        const API_URL = "http://127.0.0.1:5000/api";
+
+        const USER_ID = 1;
+
+
+        // ==============================
+        // LOAD HABITS
+        // ==============================
+
+        async function loadHabits() {
+
+            const habitGrid = document.getElementById("habitGrid");
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/habits/${USER_ID}`
+                );
+
+                if (!response.ok) {
+                    throw new Error("Unable to load habits");
+                }
+
+                const habits = await response.json();
+
+                habitGrid.innerHTML = "";
+
+                if (habits.length === 0) {
+
+                    habitGrid.innerHTML = `
+                        <div class="empty-state">
+                            <h3>No habits yet 🌱</h3>
+                            <p>Click "Add Habit" to create your first habit.</p>
+                        </div>
+                    `;
+
+                    updateProgress(0, 0);
+
+                    return;
+                }
+
+
+                let completedToday = 0;
+
+                const today = new Date()
+                    .toISOString()
+                    .split("T")[0];
+
+
+                habits.forEach(habit => {
+
+                    const completed =
+                        habit.completions &&
+                        habit.completions.includes(today);
+
+
+                    if (completed) {
+                        completedToday++;
+                    }
+
+
+                    let icon = "🌱";
+
+                    if (habit.category === "Health") {
+                        icon = "💧";
+                    }
+
+                    else if (habit.category === "Fitness") {
+                        icon = "🏃";
+                    }
+
+                    else if (habit.category === "Study") {
+                        icon = "📚";
+                    }
+
+                    else if (habit.category === "Mindfulness") {
+                        icon = "🧘";
+                    }
+
+                    else if (habit.category === "Lifestyle") {
+                        icon = "✨";
+                    }
+
+
+                    habitGrid.innerHTML += `
+
+                        <div class="habit-card">
+
+                            <div class="habit-icon">
+                                ${icon}
+                            </div>
+
+                            <h3>
+                                ${escapeHtml(habit.name)}
+                            </h3>
+
+                            <p>
+                                Daily habit
+                            </p>
+
+                            <div class="habit-info">
+
+                                <span class="category">
+                                    ${escapeHtml(habit.category)}
+                                </span>
+
+                                <span class="xp">
+                                    +${habit.xp} XP
+                                </span>
+
+                            </div>
+
+                            <button
+                                class="complete-btn ${completed ? "completed" : ""}"
+                                ${completed ? "disabled" : ""}
+                                onclick="completeHabit(${habit.id}, this)"
+                            >
+                                ${completed ? "✓ Completed Today" : "Complete Habit"}
+                            </button>
+
+                        </div>
+                    `;
+                });
+
+
+                updateProgress(
+                    completedToday,
+                    habits.length
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                habitGrid.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Unable to load habits</h3>
+                        <p>Make sure the Flask server is running.</p>
+                    </div>
+                `;
+
+            }
+        }
+
+
+        // ==============================
+        // UPDATE PROGRESS
+        // ==============================
+
+        function updateProgress(completed, total) {
+
+            const progressText =
+                document.getElementById("progressText");
+
+            const progressFill =
+                document.getElementById("progressFill");
+
+
+            progressText.innerText =
+                `${completed} / ${total} completed`;
+
+
+            if (total === 0) {
+
+                progressFill.style.width = "0%";
+
+                return;
+            }
+
+
+            const percentage =
+                (completed / total) * 100;
+
+
+            progressFill.style.width =
+                `${percentage}%`;
+        }
+
+
+        // ==============================
+        // COMPLETE HABIT
+        // ==============================
+
+        async function completeHabit(habitId, button) {
+
+            try {
+
+                button.disabled = true;
+
+                const response = await fetch(
+                    `${API_URL}/habits/${habitId}/complete`,
+                    {
+                        method: "POST"
+                    }
+                );
+
+
+                const data = await response.json();
+
+
+                // Backend error
+                if (!response.ok) {
+
+                    alert(
+                        data.error ||
+                        data.message ||
+                        "Habit already completed today"
+                    );
+
+                    button.disabled = false;
+
+                    return;
+                }
+
+
+                // Success
+                alert(
+                    `🎉 Habit completed! +${data.xp_earned} XP`
+                );
+
+
+                // Reload habits
+                await loadHabits();
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Complete habit error:",
+                    error
+                );
+
+                alert(
+                    "Unable to connect to backend."
+                );
+
+                button.disabled = false;
+            }
+        }
+
+
+        // ==============================
+        // OPEN MODAL
+        // ==============================
+
+        function openModal() {
+
+            document.getElementById(
+                "habitModal"
+            ).style.display = "flex";
+
+        }
+
+
+        // ==============================
+        // CLOSE MODAL
+        // ==============================
+
+        function closeModal() {
+
+            document.getElementById(
+                "habitModal"
+            ).style.display = "none";
+
+        }
+
+
+        // ==============================
+        // ADD HABIT
+        // ==============================
+
+        async function addHabit() {
+
+            const name =
+                document.getElementById(
+                    "habitName"
+                ).value.trim();
+
+
+            const category =
+                document.getElementById(
+                    "habitCategory"
+                ).value;
+
+
+            const xp =
+                Number(
+                    document.getElementById(
+                        "habitXP"
+                    ).value
+                );
+
+
+            if (!name) {
+
+                alert(
+                    "Please enter a habit name."
+                );
+
+                return;
+            }
+
+
+            if (!xp || xp < 1) {
+
+                alert(
+                    "Please enter a valid XP."
+                );
+
+                return;
+            }
+
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/habits`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            user_id: USER_ID,
+
+                            name: name,
+
+                            category: category,
+
+                            target: 1,
+
+                            xp: xp
+
+                        })
+                    }
+                );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    alert(
+                        data.error ||
+                        "Unable to add habit."
+                    );
+
+                    return;
+                }
+
+
+                alert(
+                    "✅ Habit added successfully!"
+                );
+
+
+                document.getElementById(
+                    "habitName"
+                ).value = "";
+
+
+                document.getElementById(
+                    "habitXP"
+                ).value = 10;
+
+
+                closeModal();
+
+
+                loadHabits();
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Unable to connect to backend."
+                );
+
+            }
+        }
+
+
+        // ==============================
+        // ESCAPE HTML
+        // ==============================
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement("div");
+
+            div.textContent = text;
+
+            return div.innerHTML;
+        }
+
+
+        // ==============================
+        // CLOSE MODAL OUTSIDE CLICK
+        // ==============================
+
+        window.addEventListener(
+            "click",
+            function(event) {
+
+                const modal =
+                    document.getElementById(
+                        "habitModal"
+                    );
+
+                if (event.target === modal) {
+
+                    closeModal();
+
+                }
+
+            }
+        );
+
+
+        // ==============================
+        // START
+        // ==============================
+
+        loadHabits();
+
+    </script>
+
+</body>
+</html>

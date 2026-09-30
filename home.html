@@ -1,0 +1,867 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitQuest | Home</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            color: white;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(124, 58, 237, 0.25), transparent 30%),
+                radial-gradient(circle at 85% 25%, rgba(6, 182, 212, 0.18), transparent 30%),
+                radial-gradient(circle at 50% 90%, rgba(59, 130, 246, 0.15), transparent 35%),
+                #050816;
+            overflow-x: hidden;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(1px);
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .orb.one {
+            width: 180px;
+            height: 180px;
+            background: #7c3aed;
+            top: 10%;
+            left: -80px;
+            animation: floatOne 8s infinite ease-in-out;
+        }
+
+        .orb.two {
+            width: 140px;
+            height: 140px;
+            background: #06b6d4;
+            right: -60px;
+            top: 55%;
+            animation: floatTwo 7s infinite ease-in-out;
+        }
+
+        .orb.three {
+            width: 90px;
+            height: 90px;
+            background: #3b82f6;
+            left: 45%;
+            bottom: -30px;
+            animation: floatThree 6s infinite ease-in-out;
+        }
+
+        @keyframes floatOne {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-35px); }
+        }
+
+        @keyframes floatTwo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(40px); }
+        }
+
+        @keyframes floatThree {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-25px); }
+        }
+
+        nav {
+            width: 90%;
+            max-width: 1200px;
+            margin: 25px auto;
+            padding: 15px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(18px);
+            border-radius: 18px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.5);
+        }
+
+        /* NAVBAR BUTTONS - UPDATED ONLY */
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            transition: 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: white;
+            background: rgba(124, 58, 237, 0.20);
+            border-color: rgba(124, 58, 237, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124, 58, 237, 0.18);
+        }
+
+        .nav-btn {
+            padding: 10px 18px !important;
+            border-radius: 30px !important;
+            background: linear-gradient(
+                135deg,
+                rgba(124, 58, 237, 0.35),
+                rgba(6, 182, 212, 0.20)
+            ) !important;
+            border: 1px solid rgba(124, 58, 237, 0.5) !important;
+            color: white !important;
+        }
+
+        .hero {
+            width: 90%;
+            max-width: 1200px;
+            min-height: 650px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 70px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content {
+            animation: slideLeft 1s ease;
+        }
+
+        @keyframes slideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 9px 15px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #67e8f9;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            margin-bottom: 22px;
+        }
+
+        h1 {
+            font-size: clamp(45px, 6vw, 76px);
+            line-height: 1.02;
+            margin-bottom: 22px;
+            letter-spacing: -3px;
+        }
+
+        h1 span {
+            background: linear-gradient(90deg, #a78bfa, #22d3ee, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            max-width: 570px;
+            color: #94a3b8;
+            font-size: 17px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 14px 23px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .primary {
+            color: white;
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+        }
+
+        .primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.45);
+        }
+
+        .secondary {
+            color: #cbd5e1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .preview-area {
+            position: relative;
+            animation: slideRight 1s ease;
+        }
+
+        @keyframes slideRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .dashboard-card {
+            padding: 25px;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(22px);
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.35),
+                0 0 50px rgba(124, 58, 237, 0.12);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .date {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .level-box {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 18px;
+            border-radius: 18px;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .level-circle {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            box-shadow: 0 0 25px rgba(124, 58, 237, 0.4);
+        }
+
+        .level-number {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .level-text {
+            font-size: 9px;
+            letter-spacing: 1px;
+        }
+
+        .level-info h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+        }
+
+        .level-info p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .xp-section {
+            margin-bottom: 22px;
+        }
+
+        .xp-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #94a3b8;
+        }
+
+        .xp-info strong {
+            color: #67e8f9;
+        }
+
+        .xp-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .xp-fill {
+            width: 72%;
+            height: 100%;
+            border-radius: 20px;
+            background: linear-gradient(90deg, #7c3aed, #06b6d4);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+        }
+
+        .habit-title {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .habit {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 15px;
+            margin-bottom: 9px;
+            border-radius: 13px;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .habit-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .habit-icon {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(6, 182, 212, 0.12);
+        }
+
+        .habit-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .habit-xp {
+            font-size: 11px;
+            color: #67e8f9;
+        }
+
+        .check {
+            width: 23px;
+            height: 23px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #7c3aed, #06b6d4);
+            font-size: 12px;
+        }
+
+        .float-card {
+            position: absolute;
+            padding: 13px 16px;
+            background: rgba(10, 15, 35, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+            animation: cardFloat 4s infinite ease-in-out;
+        }
+
+        .streak-card {
+            left: -45px;
+            top: 70px;
+        }
+
+        .badge-card {
+            right: -35px;
+            bottom: 70px;
+        }
+
+        .float-title {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .float-value {
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .stats {
+            width: 90%;
+            max-width: 1000px;
+            margin: 10px auto 50px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat {
+            padding: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            backdrop-filter: blur(12px);
+        }
+
+        .stat-number {
+            font-size: 25px;
+            font-weight: 800;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 50px;
+                padding: 50px 0;
+            }
+
+            .hero-content {
+                text-align: center;
+            }
+
+            .description {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .buttons {
+                justify-content: center;
+            }
+
+            .preview-area {
+                max-width: 550px;
+                width: 100%;
+                margin: auto;
+            }
+
+            .streak-card {
+                left: -15px;
+            }
+
+            .badge-card {
+                right: -15px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            nav {
+                padding: 12px 15px;
+            }
+
+            .nav-links a:not(.nav-btn) {
+                display: none;
+            }
+
+            h1 {
+                letter-spacing: -2px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .float-card {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+
+    <!-- NAVBAR -->
+    <nav>
+
+        <div class="logo">
+            <div class="logo-icon">⚡</div>
+            HABITQUEST
+        </div>
+
+        <div class="nav-links">
+
+            <a href="home.html">
+                Home
+            </a>
+
+            <a href="habits.html">
+                Explore Habits
+            </a>
+
+            <a href="achievements.html">
+                Achievements
+            </a>
+
+            <a href="dashboard.html" class="nav-btn">
+                Dashboard
+            </a>
+
+        </div>
+
+    </nav>
+
+
+    <!-- HERO -->
+    <main class="hero">
+
+        <section class="hero-content">
+
+            <div class="badge">
+                ✦ GAMIFY YOUR DAILY HABITS
+            </div>
+
+            <h1>
+                Level Up Your
+                <span>Healthy Life.</span>
+            </h1>
+
+            <p class="description">
+                Turn everyday habits into an exciting journey.
+                Complete your daily goals, earn XP, build streaks,
+                unlock achievements and level up yourself.
+            </p>
+
+            <div class="buttons">
+
+                <a href="habits.html" class="btn primary">
+                    START YOUR JOURNEY 🚀
+                </a>
+
+                <a href="dashboard.html" class="btn secondary">
+                    VIEW DASHBOARD →
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- DASHBOARD PREVIEW -->
+        <section class="preview-area">
+
+            <div class="float-card streak-card">
+
+                <div class="float-title">
+                    CURRENT STREAK
+                </div>
+
+                <div class="float-value">
+                    🔥 7 Days
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-card">
+
+                <div class="card-top">
+
+                    <div class="card-title">
+                        Today's Quest
+                    </div>
+
+                    <div class="date">
+                        TODAY
+                    </div>
+
+                </div>
+
+
+                <div class="level-box">
+
+                    <div class="level-circle">
+
+                        <div class="level-number">
+                            04
+                        </div>
+
+                        <div class="level-text">
+                            LEVEL
+                        </div>
+
+                    </div>
+
+                    <div class="level-info">
+
+                        <h3>
+                            Healthy Explorer
+                        </h3>
+
+                        <p>
+                            Keep going! You're doing great.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="xp-section">
+
+                    <div class="xp-info">
+
+                        <span>
+                            XP Progress
+                        </span>
+
+                        <strong>
+                            720 / 1000 XP
+                        </strong>
+
+                    </div>
+
+                    <div class="xp-bar">
+                        <div class="xp-fill"></div>
+                    </div>
+
+                </div>
+
+
+                <div class="habit-title">
+                    Today's Habits
+                </div>
+
+
+                <div class="habit">
+
+                    <div class="habit-left">
+
+                        <div class="habit-icon">
+                            💧
+                        </div>
+
+                        <div>
+
+                            <div class="habit-name">
+                                Drink Water
+                            </div>
+
+                            <div class="habit-xp">
+                                +50 XP
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="check">
+                        ✓
+                    </div>
+
+                </div>
+
+
+                <div class="habit">
+
+                    <div class="habit-left">
+
+                        <div class="habit-icon">
+                            🏃
+                        </div>
+
+                        <div>
+
+                            <div class="habit-name">
+                                Exercise
+                            </div>
+
+                            <div class="habit-xp">
+                                +100 XP
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="check">
+                        ✓
+                    </div>
+
+                </div>
+
+
+                <div class="habit">
+
+                    <div class="habit-left">
+
+                        <div class="habit-icon">
+                            📚
+                        </div>
+
+                        <div>
+
+                            <div class="habit-name">
+                                Read
+                            </div>
+
+                            <div class="habit-xp">
+                                +50 XP
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="check">
+                        ✓
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="float-card badge-card">
+
+                <div class="float-title">
+                    NEW ACHIEVEMENT
+                </div>
+
+                <div class="float-value">
+                    🏆 7 Day Warrior
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- STATS -->
+    <section class="stats">
+
+        <div class="stat">
+
+            <div class="stat-number">
+                7
+            </div>
+
+            <div class="stat-label">
+                Day Streak
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                720
+            </div>
+
+            <div class="stat-label">
+                Total XP
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                12
+            </div>
+
+            <div class="stat-label">
+                Achievements
+            </div>
+
+        </div>
+
+    </section>
+
+</body>
+</html>
+```

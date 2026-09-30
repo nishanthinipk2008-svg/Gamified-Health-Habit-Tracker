@@ -1,0 +1,509 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HabitQuest</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            overflow: hidden;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            color: white;
+
+            background:
+                radial-gradient(
+                    circle at 50% 45%,
+                    rgba(124, 58, 237, 0.20),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 20% 20%,
+                    rgba(59, 130, 246, 0.14),
+                    transparent 30%
+                ),
+                #070a18;
+        }
+
+        /* =========================
+           BACKGROUND
+        ========================= */
+
+        .background {
+            position: fixed;
+            inset: 0;
+
+            overflow: hidden;
+
+            pointer-events: none;
+        }
+
+        .glow {
+            position: absolute;
+
+            border-radius: 50%;
+
+            filter: blur(65px);
+
+            opacity: 0.55;
+        }
+
+        .glow-one {
+            width: 230px;
+            height: 230px;
+
+            top: -80px;
+            left: -60px;
+
+            background: rgba(124, 58, 237, 0.20);
+        }
+
+        .glow-two {
+            width: 250px;
+            height: 250px;
+
+            right: -80px;
+            bottom: -90px;
+
+            background: rgba(14, 165, 233, 0.16);
+        }
+
+        /* Floating circles */
+
+        .float-circle {
+            position: absolute;
+
+            border: 1px solid rgba(167, 139, 250, 0.20);
+
+            border-radius: 50%;
+
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .circle-one {
+            width: 80px;
+            height: 80px;
+
+            top: 13%;
+            left: 12%;
+        }
+
+        .circle-two {
+            width: 45px;
+            height: 45px;
+
+            top: 23%;
+            right: 17%;
+
+            animation-delay: 1s;
+        }
+
+        .circle-three {
+            width: 110px;
+            height: 110px;
+
+            bottom: 12%;
+            right: 12%;
+
+            animation-delay: 2s;
+        }
+
+        .circle-four {
+            width: 55px;
+            height: 55px;
+
+            bottom: 20%;
+            left: 17%;
+
+            animation-delay: 3s;
+        }
+
+        /* Floating diamonds */
+
+        .diamond {
+            position: absolute;
+
+            width: 15px;
+            height: 15px;
+
+            border: 1px solid rgba(96, 165, 250, 0.45);
+
+            transform: rotate(45deg);
+
+            animation: diamondFloat 5s ease-in-out infinite;
+        }
+
+        .diamond-one {
+            top: 20%;
+            left: 32%;
+        }
+
+        .diamond-two {
+            top: 70%;
+            right: 32%;
+
+            animation-delay: 1.5s;
+        }
+
+        .diamond-three {
+            bottom: 25%;
+            left: 42%;
+
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-22px);
+            }
+        }
+
+        @keyframes diamondFloat {
+            0%, 100% {
+                transform: translateY(0) rotate(45deg);
+            }
+
+            50% {
+                transform: translateY(-18px) rotate(90deg);
+            }
+        }
+
+        /* =========================
+           MAIN CONTENT
+        ========================= */
+
+        .intro {
+            position: relative;
+            z-index: 2;
+
+            text-align: center;
+
+            animation: introAppear 1.2s ease forwards;
+        }
+
+        @keyframes introAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Logo */
+
+        .logo-icon {
+            width: 76px;
+            height: 76px;
+
+            margin: 0 auto 28px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 22px;
+
+            font-size: 35px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #2563eb
+                );
+
+            box-shadow:
+                0 0 35px rgba(124, 58, 237, 0.35),
+                0 18px 45px rgba(0, 0, 0, 0.35);
+
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 35px rgba(124, 58, 237, 0.35),
+                    0 18px 45px rgba(0, 0, 0, 0.35);
+            }
+
+            50% {
+                transform: scale(1.06);
+                box-shadow:
+                    0 0 55px rgba(124, 58, 237, 0.50),
+                    0 20px 50px rgba(0, 0, 0, 0.40);
+            }
+        }
+
+        /* Title */
+
+        .title {
+            font-size: clamp(48px, 8vw, 82px);
+
+            font-weight: 800;
+
+            letter-spacing: -4px;
+
+            margin-bottom: 10px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #c4b5fd,
+                    #60a5fa
+                );
+
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: clamp(15px, 2vw, 20px);
+
+            letter-spacing: 5px;
+
+            color: #9ca7bd;
+
+            font-weight: 600;
+
+            margin-bottom: 30px;
+        }
+
+        /* Divider */
+
+        .divider {
+            width: 170px;
+            height: 1px;
+
+            margin: 0 auto 28px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    #8b5cf6,
+                    #38bdf8,
+                    transparent
+                );
+        }
+
+        /* Tagline */
+
+        .tagline {
+            color: #aeb7cc;
+
+            font-size: 14px;
+
+            line-height: 1.8;
+
+            margin-bottom: 30px;
+        }
+
+        .tagline span {
+            color: #c4b5fd;
+        }
+
+        /* Loading */
+
+        .loading {
+            width: 150px;
+
+            margin: 0 auto;
+
+            text-align: center;
+        }
+
+        .loading-text {
+            color: #66728a;
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+
+            margin-bottom: 9px;
+        }
+
+        .loading-bar {
+            width: 100%;
+            height: 3px;
+
+            overflow: hidden;
+
+            border-radius: 20px;
+
+            background: rgba(255,255,255,0.08);
+        }
+
+        .loading-progress {
+            width: 0%;
+            height: 100%;
+
+            border-radius: inherit;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #7c3aed,
+                    #3b82f6,
+                    #22d3ee
+                );
+
+            animation: loading 5s linear forwards;
+        }
+
+        @keyframes loading {
+            from {
+                width: 0%;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .logo-icon {
+                width: 65px;
+                height: 65px;
+
+                font-size: 29px;
+            }
+
+            .title {
+                letter-spacing: -2px;
+            }
+
+            .subtitle {
+                letter-spacing: 3px;
+            }
+
+            .circle-one {
+                left: -20px;
+            }
+
+            .circle-three {
+                right: -30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =========================
+         BACKGROUND OBJECTS
+    ========================= -->
+
+    <div class="background">
+
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+
+        <div class="float-circle circle-one"></div>
+        <div class="float-circle circle-two"></div>
+        <div class="float-circle circle-three"></div>
+        <div class="float-circle circle-four"></div>
+
+        <div class="diamond diamond-one"></div>
+        <div class="diamond diamond-two"></div>
+        <div class="diamond diamond-three"></div>
+
+    </div>
+
+
+    <!-- =========================
+         INTRO CONTENT
+    ========================= -->
+
+    <main class="intro">
+
+        <div class="logo-icon">
+            ⚡
+        </div>
+
+
+        <h1 class="title">
+            HABITQUEST
+        </h1>
+
+
+        <p class="subtitle">
+            GAMIFIED HEALTH HABIT TRACKER
+        </p>
+
+
+        <div class="divider"></div>
+
+
+        <p class="tagline">
+            Build Habits <span>•</span>
+            Earn XP <span>•</span>
+            Level Up Yourself
+        </p>
+
+
+        <div class="loading">
+
+            <div class="loading-text">
+                STARTING YOUR JOURNEY...
+            </div>
+
+            <div class="loading-bar">
+
+                <div class="loading-progress"></div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         AUTO REDIRECT
+    ========================= -->
+
+    <script>
+
+        setTimeout(function () {
+
+            window.location.href = "home.html";
+
+        }, 5000);
+
+    </script>
+
+</body>
+</html>
+```
