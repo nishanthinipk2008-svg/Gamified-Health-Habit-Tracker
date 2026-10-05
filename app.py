@@ -1,7 +1,8 @@
+```python
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
-from datetime import datetime, date
+from datetime import date
 import os
 
 # ========================================
@@ -18,17 +19,14 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DATABASE_DIR = os.path.join(BASE_DIR, "database")
-os.makedirs(DATABASE_DIR, exist_ok=True)
+# Your GitHub structure has all frontend files
+# directly in the root folder.
+FRONTEND_FOLDER = BASE_DIR
 
+# Your database is also in the root folder.
 DATABASE = os.path.join(
-    DATABASE_DIR,
-    "habit_tracker.db"
-)
-
-FRONTEND_FOLDER = os.path.join(
     BASE_DIR,
-    "frontend"
+    "habit_tracker.db"
 )
 
 
@@ -51,7 +49,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
-    # Users table
+    # Users
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +59,7 @@ def init_db():
         )
     """)
 
-    # Habits table
+    # Habits
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +73,7 @@ def init_db():
         )
     """)
 
-    # Habit completions table
+    # Habit completions
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS habit_completions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +83,7 @@ def init_db():
         )
     """)
 
-    # Progress table
+    # Progress
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +96,7 @@ def init_db():
         )
     """)
 
-    # Achievements table
+    # Achievements
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS achievements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,7 +112,7 @@ def init_db():
     conn.close()
 
 
-# Initialize database when Flask starts
+# Initialize database
 init_db()
 
 
@@ -135,6 +133,14 @@ def index_page():
     return send_from_directory(
         FRONTEND_FOLDER,
         "index.html"
+    )
+
+
+@app.route("/home.html")
+def home_page():
+    return send_from_directory(
+        FRONTEND_FOLDER,
+        "home.html"
     )
 
 
@@ -159,6 +165,26 @@ def achievements_page():
     return send_from_directory(
         FRONTEND_FOLDER,
         "achievements.html"
+    )
+
+
+# ========================================
+# STATIC FILES
+# ========================================
+
+@app.route("/style.css")
+def style_css():
+    return send_from_directory(
+        FRONTEND_FOLDER,
+        "style.css"
+    )
+
+
+@app.route("/script.js")
+def script_js():
+    return send_from_directory(
+        FRONTEND_FOLDER,
+        "script.js"
     )
 
 
@@ -203,9 +229,15 @@ def create_user():
     try:
 
         cursor.execute("""
-            INSERT INTO users (name, email)
+            INSERT INTO users (
+                name,
+                email
+            )
             VALUES (?, ?)
-        """, (name, email))
+        """, (
+            name,
+            email
+        ))
 
         user_id = cursor.lastrowid
 
@@ -217,7 +249,9 @@ def create_user():
                 streak
             )
             VALUES (?, 0, 1, 0)
-        """, (user_id,))
+        """, (
+            user_id,
+        ))
 
         conn.commit()
 
@@ -253,7 +287,9 @@ def get_user(user_id):
         SELECT *
         FROM users
         WHERE id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     user = cursor.fetchone()
 
@@ -284,9 +320,18 @@ def add_habit():
 
     user_id = data.get("user_id")
     name = data.get("name")
-    category = data.get("category", "General")
-    target = data.get("target", 1)
-    xp = data.get("xp", 10)
+    category = data.get(
+        "category",
+        "General"
+    )
+    target = data.get(
+        "target",
+        1
+    )
+    xp = data.get(
+        "xp",
+        10
+    )
 
     if not user_id or not name:
 
@@ -302,7 +347,9 @@ def add_habit():
         SELECT id
         FROM users
         WHERE id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     user = cursor.fetchone()
 
@@ -343,7 +390,7 @@ def add_habit():
 
 
 # ========================================
-# GET USER HABITS
+# GET HABITS
 # ========================================
 
 @app.route("/api/habits/<int:user_id>", methods=["GET"])
@@ -357,7 +404,9 @@ def get_habits(user_id):
         FROM habits
         WHERE user_id = ?
         ORDER BY id DESC
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     habits = cursor.fetchall()
 
@@ -373,7 +422,10 @@ def get_habits(user_id):
 # COMPLETE HABIT
 # ========================================
 
-@app.route("/api/habits/<int:habit_id>/complete", methods=["POST"])
+@app.route(
+    "/api/habits/<int:habit_id>/complete",
+    methods=["POST"]
+)
 def complete_habit(habit_id):
 
     conn = get_db()
@@ -384,7 +436,9 @@ def complete_habit(habit_id):
         SELECT *
         FROM habits
         WHERE id = ?
-    """, (habit_id,))
+    """, (
+        habit_id,
+    ))
 
     habit = cursor.fetchone()
 
@@ -405,18 +459,28 @@ def complete_habit(habit_id):
             habit_id
         )
         VALUES (?)
-    """, (habit_id,))
+    """, (
+        habit_id,
+    ))
 
-    # Get current progress
+    # Get progress
     cursor.execute("""
         SELECT *
         FROM progress
         WHERE user_id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     progress = cursor.fetchone()
 
+    today = date.today().isoformat()
+
     if not progress:
+
+        total_xp = xp
+        level = (total_xp // 100) + 1
+        streak = 1
 
         cursor.execute("""
             INSERT INTO progress (
@@ -426,29 +490,24 @@ def complete_habit(habit_id):
                 streak,
                 last_active
             )
-            VALUES (?, ?, 1, 0, ?)
+            VALUES (?, ?, ?, ?, ?)
         """, (
             user_id,
-            xp,
-            date.today().isoformat()
+            total_xp,
+            level,
+            streak,
+            today
         ))
-
-        total_xp = xp
-        level = 1
-        streak = 0
 
     else:
 
         total_xp = progress["total_xp"] + xp
 
-        # Level calculation
         level = (total_xp // 100) + 1
 
         streak = progress["streak"]
 
         last_active = progress["last_active"]
-
-        today = date.today().isoformat()
 
         if last_active != today:
 
@@ -494,8 +553,6 @@ def complete_habit(habit_id):
             user_id
         ))
 
-    conn.commit()
-
     # ========================================
     # FIRST STEP ACHIEVEMENT
     # ========================================
@@ -506,7 +563,9 @@ def complete_habit(habit_id):
         JOIN habits h
         ON hc.habit_id = h.id
         WHERE h.user_id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     completion_count = cursor.fetchone()[0]
 
@@ -556,7 +615,10 @@ def complete_habit(habit_id):
 # DASHBOARD
 # ========================================
 
-@app.route("/api/dashboard/<int:user_id>", methods=["GET"])
+@app.route(
+    "/api/dashboard/<int:user_id>",
+    methods=["GET"]
+)
 def dashboard(user_id):
 
     conn = get_db()
@@ -567,7 +629,9 @@ def dashboard(user_id):
         SELECT *
         FROM users
         WHERE id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     user = cursor.fetchone()
 
@@ -579,12 +643,14 @@ def dashboard(user_id):
             "error": "User not found"
         }), 404
 
-    # Progress
+    # Get progress
     cursor.execute("""
         SELECT *
         FROM progress
         WHERE user_id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     progress = cursor.fetchone()
 
@@ -598,7 +664,9 @@ def dashboard(user_id):
                 streak
             )
             VALUES (?, 0, 1, 0)
-        """, (user_id,))
+        """, (
+            user_id,
+        ))
 
         conn.commit()
 
@@ -606,7 +674,9 @@ def dashboard(user_id):
             SELECT *
             FROM progress
             WHERE user_id = ?
-        """, (user_id,))
+        """, (
+            user_id,
+        ))
 
         progress = cursor.fetchone()
 
@@ -615,7 +685,9 @@ def dashboard(user_id):
         SELECT COUNT(*)
         FROM habits
         WHERE user_id = ?
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     total_habits = cursor.fetchone()[0]
 
@@ -654,7 +726,10 @@ def dashboard(user_id):
 # GET ACHIEVEMENTS
 # ========================================
 
-@app.route("/api/achievements/<int:user_id>", methods=["GET"])
+@app.route(
+    "/api/achievements/<int:user_id>",
+    methods=["GET"]
+)
 def get_achievements(user_id):
 
     conn = get_db()
@@ -665,7 +740,9 @@ def get_achievements(user_id):
         FROM achievements
         WHERE user_id = ?
         ORDER BY earned_at DESC
-    """, (user_id,))
+    """, (
+        user_id,
+    ))
 
     achievements = cursor.fetchall()
 
@@ -681,7 +758,10 @@ def get_achievements(user_id):
 # ADD ACHIEVEMENT
 # ========================================
 
-@app.route("/api/achievements", methods=["POST"])
+@app.route(
+    "/api/achievements",
+    methods=["POST"]
+)
 def add_achievement():
 
     data = request.get_json()
@@ -747,3 +827,4 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=5000
     )
+```
