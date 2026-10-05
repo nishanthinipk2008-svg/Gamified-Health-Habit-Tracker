@@ -1,43 +1,22 @@
-```python
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 from datetime import date
 import os
 
-# ========================================
-# FLASK APP
-# ========================================
-
 app = Flask(__name__)
 CORS(app)
 
-# ========================================
-# PATHS
-# ========================================
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# All HTML/CSS/JS files are in repository root
 FRONTEND_FOLDER = BASE_DIR
-
-# Database is in repository root
 DATABASE = os.path.join(BASE_DIR, "habit_tracker.db")
 
-
-# ========================================
-# DATABASE CONNECTION
-# ========================================
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
 
-
-# ========================================
-# DATABASE INITIALIZATION
-# ========================================
 
 def init_db():
     conn = get_db()
@@ -101,13 +80,8 @@ def init_db():
     conn.close()
 
 
-# Initialize database when Render starts
 init_db()
 
-
-# ========================================
-# FRONTEND ROUTES
-# ========================================
 
 @app.route("/")
 def index():
@@ -139,10 +113,6 @@ def achievements_html():
     return send_from_directory(FRONTEND_FOLDER, "achievements.html")
 
 
-# ========================================
-# STATIC FILES
-# ========================================
-
 @app.route("/style.css")
 def style_css():
     return send_from_directory(FRONTEND_FOLDER, "style.css")
@@ -153,10 +123,6 @@ def script_js():
     return send_from_directory(FRONTEND_FOLDER, "script.js")
 
 
-# ========================================
-# API TEST
-# ========================================
-
 @app.route("/api/test", methods=["GET"])
 def api_test():
     return jsonify({
@@ -164,10 +130,6 @@ def api_test():
         "status": "success"
     })
 
-
-# ========================================
-# CREATE USER
-# ========================================
 
 @app.route("/api/users", methods=["POST"])
 def create_user():
@@ -191,7 +153,6 @@ def create_user():
     cursor = conn.cursor()
 
     try:
-
         cursor.execute("""
             INSERT INTO users (name, email)
             VALUES (?, ?)
@@ -228,10 +189,6 @@ def create_user():
         conn.close()
 
 
-# ========================================
-# GET USER
-# ========================================
-
 @app.route("/api/users/<int:user_id>", methods=["GET"])
 def get_user(user_id):
 
@@ -245,6 +202,7 @@ def get_user(user_id):
     """, (user_id,))
 
     user = cursor.fetchone()
+
     conn.close()
 
     if user is None:
@@ -254,10 +212,6 @@ def get_user(user_id):
 
     return jsonify(dict(user))
 
-
-# ========================================
-# ADD HABIT
-# ========================================
 
 @app.route("/api/habits", methods=["POST"])
 def add_habit():
@@ -326,10 +280,6 @@ def add_habit():
     }), 201
 
 
-# ========================================
-# GET HABITS
-# ========================================
-
 @app.route("/api/habits/<int:user_id>", methods=["GET"])
 def get_habits(user_id):
 
@@ -353,14 +303,7 @@ def get_habits(user_id):
     ])
 
 
-# ========================================
-# COMPLETE HABIT
-# ========================================
-
-@app.route(
-    "/api/habits/<int:habit_id>/complete",
-    methods=["POST"]
-)
+@app.route("/api/habits/<int:habit_id>/complete", methods=["POST"])
 def complete_habit(habit_id):
 
     conn = get_db()
@@ -384,13 +327,11 @@ def complete_habit(habit_id):
     user_id = habit["user_id"]
     xp = habit["xp"]
 
-    # Record completion
     cursor.execute("""
         INSERT INTO habit_completions (habit_id)
         VALUES (?)
     """, (habit_id,))
 
-    # Get progress
     cursor.execute("""
         SELECT *
         FROM progress
@@ -443,6 +384,7 @@ def complete_habit(habit_id):
 
                     if difference == 1:
                         streak += 1
+
                     elif difference > 1:
                         streak = 1
 
@@ -467,10 +409,6 @@ def complete_habit(habit_id):
             today,
             user_id
         ))
-
-    # ========================================
-    # FIRST STEP ACHIEVEMENT
-    # ========================================
 
     cursor.execute("""
         SELECT COUNT(*)
@@ -524,17 +462,12 @@ def complete_habit(habit_id):
     })
 
 
-# ========================================
-# DASHBOARD
-# ========================================
-
 @app.route("/api/dashboard/<int:user_id>", methods=["GET"])
 def dashboard(user_id):
 
     conn = get_db()
     cursor = conn.cursor()
 
-    # User
     cursor.execute("""
         SELECT *
         FROM users
@@ -550,7 +483,6 @@ def dashboard(user_id):
             "error": "User not found"
         }), 404
 
-    # Progress
     cursor.execute("""
         SELECT *
         FROM progress
@@ -581,7 +513,6 @@ def dashboard(user_id):
 
         progress = cursor.fetchone()
 
-    # Total habits
     cursor.execute("""
         SELECT COUNT(*)
         FROM habits
@@ -590,7 +521,6 @@ def dashboard(user_id):
 
     total_habits = cursor.fetchone()[0]
 
-    # Completed today
     today = date.today().isoformat()
 
     cursor.execute("""
@@ -621,14 +551,7 @@ def dashboard(user_id):
     })
 
 
-# ========================================
-# GET ACHIEVEMENTS
-# ========================================
-
-@app.route(
-    "/api/achievements/<int:user_id>",
-    methods=["GET"]
-)
+@app.route("/api/achievements/<int:user_id>", methods=["GET"])
 def get_achievements(user_id):
 
     conn = get_db()
@@ -650,10 +573,6 @@ def get_achievements(user_id):
         for achievement in achievements
     ])
 
-
-# ========================================
-# ADD ACHIEVEMENT
-# ========================================
 
 @app.route("/api/achievements", methods=["POST"])
 def add_achievement():
@@ -701,14 +620,9 @@ def add_achievement():
     }), 201
 
 
-# ========================================
-# START SERVER
-# ========================================
-
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=5000,
         debug=True
     )
-```
