@@ -8,6 +8,9 @@ import os
 # FLASK APP
 # ========================================
 
+app = Flask(__name__)
+CORS(app)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DATABASE_DIR = os.path.join(BASE_DIR, "database")
@@ -21,9 +24,6 @@ DATABASE = os.path.join(
 FRONTEND_FOLDER = os.path.join(
     BASE_DIR,
     "frontend"
-)
-    BASE_DIR,
-    "../frontend"
 )
 
 
@@ -103,6 +103,13 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+# ========================================
+# INITIALIZE DATABASE
+# ========================================
+
+init_db()
 
 
 # ========================================
@@ -369,7 +376,6 @@ def complete_habit(habit_id):
 
     try:
 
-        # Get habit
         cursor.execute("""
             SELECT *
             FROM habits
@@ -388,7 +394,6 @@ def complete_habit(habit_id):
 
         completed_date = date.today().isoformat()
 
-        # Check if already completed today
         cursor.execute("""
             SELECT *
             FROM habit_completions
@@ -409,7 +414,6 @@ def complete_habit(habit_id):
                 "message": "Habit already completed today"
             }), 400
 
-        # Save completion
         cursor.execute("""
             INSERT INTO habit_completions
             (habit_id, completed_date)
@@ -419,7 +423,6 @@ def complete_habit(habit_id):
             completed_date
         ))
 
-        # Add XP
         cursor.execute("""
             UPDATE progress
             SET total_xp = total_xp + ?,
@@ -431,7 +434,6 @@ def complete_habit(habit_id):
             habit["user_id"]
         ))
 
-        # Get updated XP
         cursor.execute("""
             SELECT total_xp
             FROM progress
@@ -451,10 +453,8 @@ def complete_habit(habit_id):
 
         total_xp = progress["total_xp"]
 
-        # Calculate level
         level = (total_xp // 100) + 1
 
-        # Update level
         cursor.execute("""
             UPDATE progress
             SET level = ?
@@ -636,8 +636,6 @@ def add_achievement():
 
 if __name__ == "__main__":
 
-    init_db()
-
     print("\n========================================")
     print(" Gamified Health Habit Tracker Backend")
     print("========================================")
@@ -647,6 +645,6 @@ if __name__ == "__main__":
 
     app.run(
         debug=True,
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=5000
     )
