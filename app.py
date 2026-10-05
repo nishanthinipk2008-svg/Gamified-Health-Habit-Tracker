@@ -8,17 +8,20 @@ import os
 # FLASK APP
 # ========================================
 
-app = Flask(__name__)
-CORS(app)
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+DATABASE_DIR = os.path.join(BASE_DIR, "database")
+os.makedirs(DATABASE_DIR, exist_ok=True)
+
 DATABASE = os.path.join(
-    BASE_DIR,
-    "../database/habit_tracker.db"
+    DATABASE_DIR,
+    "habit_tracker.db"
 )
 
 FRONTEND_FOLDER = os.path.join(
+    BASE_DIR,
+    "frontend"
+)
     BASE_DIR,
     "../frontend"
 )
