@@ -11,6 +11,11 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+
+# ========================================
+# PATH CONFIGURATION
+# ========================================
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DATABASE_DIR = os.path.join(BASE_DIR, "database")
@@ -38,7 +43,7 @@ def get_db():
 
 
 # ========================================
-# CREATE DATABASE TABLES
+# DATABASE INITIALIZATION
 # ========================================
 
 def init_db():
@@ -46,38 +51,41 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
 
+    # Users table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            email TEXT UNIQUE,
-            created_at TEXT NOT NULL
+            email TEXT UNIQUE NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
+    # Habits table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             name TEXT NOT NULL,
-            category TEXT NOT NULL,
+            category TEXT,
             target INTEGER DEFAULT 1,
             xp INTEGER DEFAULT 10,
-            created_at TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
 
+    # Habit completions table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS habit_completions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             habit_id INTEGER NOT NULL,
-            completed_date TEXT NOT NULL,
-            FOREIGN KEY (habit_id) REFERENCES habits(id),
-            UNIQUE(habit_id, completed_date)
+            completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (habit_id) REFERENCES habits(id)
         )
     """)
 
+    # Progress table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS progress (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -90,13 +98,14 @@ def init_db():
         )
     """)
 
+    # Achievements table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS achievements (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             title TEXT NOT NULL,
-            description TEXT NOT NULL,
-            earned_at TEXT NOT NULL,
+            description TEXT,
+            earned_at TEXT DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
@@ -105,30 +114,27 @@ def init_db():
     conn.close()
 
 
-# ========================================
-# INITIALIZE DATABASE
-# ========================================
-
+# Initialize database when Flask starts
 init_db()
 
 
 # ========================================
-# FRONTEND PAGES
+# FRONTEND ROUTES
 # ========================================
 
 @app.route("/")
 def home():
     return send_from_directory(
         FRONTEND_FOLDER,
-        "home.html"
+        "index.html"
     )
 
 
-@app.route("/home.html")
-def home_page():
+@app.route("/index.html")
+def index_page():
     return send_from_directory(
         FRONTEND_FOLDER,
-        "home.html"
+        "index.html"
     )
 
 
@@ -160,11 +166,11 @@ def achievements_page():
 # API TEST
 # ========================================
 
-@app.route("/api/test")
+@app.route("/api/test", methods=["GET"])
 def test():
 
     return jsonify({
-        "message": "API is working!",
+        "message": "Gamified Health Habit Tracker Backend Running Successfully!",
         "status": "success"
     })
 
@@ -176,15 +182,19 @@ def test():
 @app.route("/api/users", methods=["POST"])
 def create_user():
 
-    data = request.get_json() or {}
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "error": "No data provided"
+        }), 400
 
     name = data.get("name")
     email = data.get("email")
 
-    if not name:
-
+    if not name or not email:
         return jsonify({
-            "error": "Name is required"
+            "error": "Name and email are required"
         }), 400
 
     conn = get_db()
@@ -193,32 +203,29 @@ def create_user():
     try:
 
         cursor.execute("""
-            INSERT INTO users
-            (name, email, created_at)
-            VALUES (?, ?, ?)
-        """, (
-            name,
-            email,
-            datetime.now().isoformat()
-        ))
+            INSERT INTO users (name, email)
+            VALUES (?, ?)
+        """, (name, email))
 
         user_id = cursor.lastrowid
 
         cursor.execute("""
-            INSERT INTO progress
-            (user_id, total_xp, level, streak, last_active)
-            VALUES (?, 0, 1, 0, ?)
-        """, (
-            user_id,
-            None
-        ))
+            INSERT INTO progress (
+                user_id,
+                total_xp,
+                level,
+                streak
+            )
+            VALUES (?, 0, 1, 0)
+        """, (user_id,))
 
         conn.commit()
 
         return jsonify({
             "message": "User created successfully",
             "user_id": user_id,
-            "name": name
+            "name": name,
+            "email": email
         }), 201
 
     except sqlite3.IntegrityError:
@@ -243,18 +250,9 @@ def get_user(user_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT
-            users.id,
-            users.name,
-            users.email,
-            progress.total_xp,
-            progress.level,
-            progress.streak,
-            progress.last_active
+        SELECT *
         FROM users
-        LEFT JOIN progress
-        ON users.id = progress.user_id
-        WHERE users.id = ?
+        WHERE id = ?
     """, (user_id,))
 
     user = cursor.fetchone()
@@ -277,7 +275,12 @@ def get_user(user_id):
 @app.route("/api/habits", methods=["POST"])
 def add_habit():
 
-    data = request.get_json() or {}
+    data = request.get_json()
+
+    if not data:
+        return jsonify({
+            "error": "No data provided"
+        }), 400
 
     user_id = data.get("user_id")
     name = data.get("name")
@@ -294,17 +297,38 @@ def add_habit():
     conn = get_db()
     cursor = conn.cursor()
 
+    # Check user
     cursor.execute("""
-        INSERT INTO habits
-        (user_id, name, category, target, xp, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        SELECT id
+        FROM users
+        WHERE id = ?
+    """, (user_id,))
+
+    user = cursor.fetchone()
+
+    if not user:
+
+        conn.close()
+
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    cursor.execute("""
+        INSERT INTO habits (
+            user_id,
+            name,
+            category,
+            target,
+            xp
+        )
+        VALUES (?, ?, ?, ?, ?)
     """, (
         user_id,
         name,
         category,
         target,
-        xp,
-        datetime.now().isoformat()
+        xp
     ))
 
     habit_id = cursor.lastrowid
@@ -319,7 +343,7 @@ def add_habit():
 
 
 # ========================================
-# GET HABITS
+# GET USER HABITS
 # ========================================
 
 @app.route("/api/habits/<int:user_id>", methods=["GET"])
@@ -337,31 +361,12 @@ def get_habits(user_id):
 
     habits = cursor.fetchall()
 
-    result = []
-
-    for habit in habits:
-
-        habit_data = dict(habit)
-
-        cursor.execute("""
-            SELECT completed_date
-            FROM habit_completions
-            WHERE habit_id = ?
-            ORDER BY completed_date DESC
-        """, (habit["id"],))
-
-        completions = cursor.fetchall()
-
-        habit_data["completions"] = [
-            row["completed_date"]
-            for row in completions
-        ]
-
-        result.append(habit_data)
-
     conn.close()
 
-    return jsonify(result)
+    return jsonify([
+        dict(habit)
+        for habit in habits
+    ])
 
 
 # ========================================
@@ -374,123 +379,177 @@ def complete_habit(habit_id):
     conn = get_db()
     cursor = conn.cursor()
 
-    try:
+    # Get habit
+    cursor.execute("""
+        SELECT *
+        FROM habits
+        WHERE id = ?
+    """, (habit_id,))
+
+    habit = cursor.fetchone()
+
+    if not habit:
+
+        conn.close()
+
+        return jsonify({
+            "error": "Habit not found"
+        }), 404
+
+    user_id = habit["user_id"]
+    xp = habit["xp"]
+
+    # Add completion
+    cursor.execute("""
+        INSERT INTO habit_completions (
+            habit_id
+        )
+        VALUES (?)
+    """, (habit_id,))
+
+    # Get current progress
+    cursor.execute("""
+        SELECT *
+        FROM progress
+        WHERE user_id = ?
+    """, (user_id,))
+
+    progress = cursor.fetchone()
+
+    if not progress:
 
         cursor.execute("""
-            SELECT *
-            FROM habits
-            WHERE id = ?
-        """, (habit_id,))
-
-        habit = cursor.fetchone()
-
-        if not habit:
-
-            conn.close()
-
-            return jsonify({
-                "error": "Habit not found"
-            }), 404
-
-        completed_date = date.today().isoformat()
-
-        cursor.execute("""
-            SELECT *
-            FROM habit_completions
-            WHERE habit_id = ?
-            AND completed_date = ?
+            INSERT INTO progress (
+                user_id,
+                total_xp,
+                level,
+                streak,
+                last_active
+            )
+            VALUES (?, ?, 1, 0, ?)
         """, (
-            habit_id,
-            completed_date
+            user_id,
+            xp,
+            date.today().isoformat()
         ))
 
-        already_completed = cursor.fetchone()
+        total_xp = xp
+        level = 1
+        streak = 0
 
-        if already_completed:
+    else:
 
-            conn.close()
+        total_xp = progress["total_xp"] + xp
 
-            return jsonify({
-                "message": "Habit already completed today"
-            }), 400
+        # Level calculation
+        level = (total_xp // 100) + 1
 
-        cursor.execute("""
-            INSERT INTO habit_completions
-            (habit_id, completed_date)
-            VALUES (?, ?)
-        """, (
-            habit_id,
-            completed_date
-        ))
+        streak = progress["streak"]
+
+        last_active = progress["last_active"]
+
+        today = date.today().isoformat()
+
+        if last_active != today:
+
+            if last_active:
+
+                try:
+
+                    last_date = date.fromisoformat(
+                        last_active
+                    )
+
+                    difference = (
+                        date.today() - last_date
+                    ).days
+
+                    if difference == 1:
+                        streak += 1
+
+                    elif difference > 1:
+                        streak = 1
+
+                except ValueError:
+
+                    streak = 1
+
+            else:
+
+                streak = 1
 
         cursor.execute("""
             UPDATE progress
-            SET total_xp = total_xp + ?,
+            SET
+                total_xp = ?,
+                level = ?,
+                streak = ?,
                 last_active = ?
             WHERE user_id = ?
         """, (
-            habit["xp"],
-            completed_date,
-            habit["user_id"]
-        ))
-
-        cursor.execute("""
-            SELECT total_xp
-            FROM progress
-            WHERE user_id = ?
-        """, (habit["user_id"],))
-
-        progress = cursor.fetchone()
-
-        if not progress:
-
-            conn.rollback()
-            conn.close()
-
-            return jsonify({
-                "error": "User progress not found"
-            }), 404
-
-        total_xp = progress["total_xp"]
-
-        level = (total_xp // 100) + 1
-
-        cursor.execute("""
-            UPDATE progress
-            SET level = ?
-            WHERE user_id = ?
-        """, (
+            total_xp,
             level,
-            habit["user_id"]
+            streak,
+            today,
+            user_id
         ))
 
-        conn.commit()
-        conn.close()
+    conn.commit()
 
-        return jsonify({
-            "message": "Habit completed!",
-            "xp_earned": habit["xp"],
-            "total_xp": total_xp,
-            "level": level
-        }), 200
+    # ========================================
+    # FIRST STEP ACHIEVEMENT
+    # ========================================
 
-    except sqlite3.IntegrityError:
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM habit_completions hc
+        JOIN habits h
+        ON hc.habit_id = h.id
+        WHERE h.user_id = ?
+    """, (user_id,))
 
-        conn.rollback()
-        conn.close()
+    completion_count = cursor.fetchone()[0]
 
-        return jsonify({
-            "error": "Habit already completed today"
-        }), 400
+    if completion_count == 1:
 
-    except Exception as e:
+        cursor.execute("""
+            SELECT id
+            FROM achievements
+            WHERE user_id = ?
+            AND title = ?
+        """, (
+            user_id,
+            "First Step"
+        ))
 
-        conn.rollback()
-        conn.close()
+        existing = cursor.fetchone()
 
-        return jsonify({
-            "error": str(e)
-        }), 500
+        if not existing:
+
+            cursor.execute("""
+                INSERT INTO achievements (
+                    user_id,
+                    title,
+                    description
+                )
+                VALUES (?, ?, ?)
+            """, (
+                user_id,
+                "First Step",
+                "Completed your first habit!"
+            ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "message": "Habit completed successfully",
+        "habit_id": habit_id,
+        "xp_earned": xp,
+        "total_xp": total_xp,
+        "level": level,
+        "streak": streak
+    })
 
 
 # ========================================
@@ -503,12 +562,26 @@ def dashboard(user_id):
     conn = get_db()
     cursor = conn.cursor()
 
+    # Check user
     cursor.execute("""
-        SELECT
-            total_xp,
-            level,
-            streak,
-            last_active
+        SELECT *
+        FROM users
+        WHERE id = ?
+    """, (user_id,))
+
+    user = cursor.fetchone()
+
+    if not user:
+
+        conn.close()
+
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    # Progress
+    cursor.execute("""
+        SELECT *
         FROM progress
         WHERE user_id = ?
     """, (user_id,))
@@ -517,45 +590,63 @@ def dashboard(user_id):
 
     if not progress:
 
-        conn.close()
+        cursor.execute("""
+            INSERT INTO progress (
+                user_id,
+                total_xp,
+                level,
+                streak
+            )
+            VALUES (?, 0, 1, 0)
+        """, (user_id,))
 
-        return jsonify({
-            "error": "User not found"
-        }), 404
+        conn.commit()
 
+        cursor.execute("""
+            SELECT *
+            FROM progress
+            WHERE user_id = ?
+        """, (user_id,))
+
+        progress = cursor.fetchone()
+
+    # Total habits
     cursor.execute("""
-        SELECT COUNT(*) AS total
+        SELECT COUNT(*)
         FROM habits
         WHERE user_id = ?
     """, (user_id,))
 
-    total_habits = cursor.fetchone()["total"]
+    total_habits = cursor.fetchone()[0]
 
+    # Completed today
     today = date.today().isoformat()
 
     cursor.execute("""
-        SELECT COUNT(*) AS completed
+        SELECT COUNT(*)
         FROM habit_completions hc
         JOIN habits h
         ON hc.habit_id = h.id
         WHERE h.user_id = ?
-        AND hc.completed_date = ?
+        AND DATE(hc.completed_at) = ?
     """, (
         user_id,
         today
     ))
 
-    completed_today = cursor.fetchone()["completed"]
+    completed_today = cursor.fetchone()[0]
 
     conn.close()
 
     return jsonify({
+        "user_id": user_id,
+        "name": user["name"],
+        "total_habits": total_habits,
+        "completed_today": completed_today,
         "total_xp": progress["total_xp"],
         "level": progress["level"],
         "streak": progress["streak"],
-        "last_active": progress["last_active"],
-        "total_habits": total_habits,
-        "completed_today": completed_today
+        "last_active": progress["last_active"]
     })
 
 
@@ -593,30 +684,41 @@ def get_achievements(user_id):
 @app.route("/api/achievements", methods=["POST"])
 def add_achievement():
 
-    data = request.get_json() or {}
+    data = request.get_json()
+
+    if not data:
+
+        return jsonify({
+            "error": "No data provided"
+        }), 400
 
     user_id = data.get("user_id")
     title = data.get("title")
-    description = data.get("description")
+    description = data.get(
+        "description",
+        ""
+    )
 
-    if not user_id or not title or not description:
+    if not user_id or not title:
 
         return jsonify({
-            "error": "user_id, title and description are required"
+            "error": "user_id and title are required"
         }), 400
 
     conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO achievements
-        (user_id, title, description, earned_at)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO achievements (
+            user_id,
+            title,
+            description
+        )
+        VALUES (?, ?, ?)
     """, (
         user_id,
         title,
-        description,
-        datetime.now().isoformat()
+        description
     ))
 
     achievement_id = cursor.lastrowid
@@ -625,23 +727,20 @@ def add_achievement():
     conn.close()
 
     return jsonify({
-        "message": "Achievement unlocked!",
+        "message": "Achievement added successfully",
         "achievement_id": achievement_id
     }), 201
 
 
 # ========================================
-# RUN SERVER
+# RUN APP
 # ========================================
 
 if __name__ == "__main__":
 
-    print("\n========================================")
-    print(" Gamified Health Habit Tracker Backend")
-    print("========================================")
-    print(" Server: http://127.0.0.1:5000")
-    print(" Database: habit_tracker.db")
-    print("========================================\n")
+    print(
+        "Gamified Health Habit Tracker Backend Running Successfully!"
+    )
 
     app.run(
         debug=True,
